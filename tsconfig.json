@@ -1,0 +1,102 @@
+{
+  // TypeScript設定ファイル for FairSplit
+  // Next.js 14 App Router + TypeScript環境用設定
+  "compilerOptions": {
+    // ターゲット言語バージョン - モダンブラウザ対応
+    "target": "ES2022",
+    // 使用するライブラリ - DOM操作とES2022機能を含む
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "ES2022"
+    ],
+    // モジュールシステム - Node.js環境でのESModule対応
+    "module": "esnext",
+    // モジュール解決方式 - Node.js式の解決を使用
+    "moduleResolution": "bundler",
+    // JSXの変換方式 - React 17+の新しいJSX Transform使用
+    "jsx": "preserve",
+    // 厳格な型チェックを有効化 - 型安全性を最大化
+    "strict": true,
+    // 未使用のローカル変数をエラーとして扱う
+    "noUnusedLocals": true,
+    // 未使用のパラメータをエラーとして扱う
+    "noUnusedParameters": true,
+    // 関数の戻り値の型が一致しない場合をエラーとする
+    "noImplicitReturns": true,
+    // switch文でfall-throughをエラーとする
+    "noFallthroughCasesInSwitch": true,
+    // 到達不可能なコードを許可しない（TypeScript 4.7+対応）
+    "allowUnreachableCode": false,
+    // 暗黙的なany型の使用を禁止
+    "noImplicitAny": true,
+    // null/undefinedの厳密チェック
+    "strictNullChecks": true,
+    // 関数パラメータの厳密チェック
+    "strictFunctionTypes": true,
+    // bind/call/applyの厳密チェック
+    "strictBindCallApply": true,
+    // プロパティの厳密初期化チェック
+    "strictPropertyInitialization": true,
+    // thisの暗黙的any型を禁止
+    "noImplicitThis": true,
+    // undefined返却の厳密チェック
+    "exactOptionalPropertyTypes": true,
+    // ESModuleのinteropを許可
+    "esModuleInterop": true,
+    // CommonJSとESModuleの相互運用性を向上
+    "allowSyntheticDefaultImports": true,
+    // JSONファイルのimportを許可
+    "resolveJsonModule": true,
+    // ファイル名の大文字小文字を強制的に一致させる
+    "forceConsistentCasingInFileNames": true,
+    // 宣言ファイルの生成をスキップ
+    "skipLibCheck": true,
+    // 分離したモジュールとしてファイルを扱う
+    "isolatedModules": true,
+    // 出力ファイルの生成をスキップ（Next.jsが処理）
+    "noEmit": true,
+    // インクリメンタルコンパイレーションを有効化
+    "incremental": true,
+    // Path mapping - @/でプロジェクトルートからの相対パス指定
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@/components/*": [
+        "./src/components/*"
+      ],
+      "@/lib/*": [
+        "./src/lib/*"
+      ],
+      "@/types/*": [
+        "./src/types/*"
+      ],
+      "@/utils/*": [
+        "./src/utils/*"
+      ]
+    },
+    // Next.js固有の設定
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "allowJs": true
+  },
+  // コンパイル対象ファイル
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  // コンパイル除外ファイル
+  "exclude": [
+    "node_modules",
+    ".next",
+    "out",
+    "dist"
+  ]
+}

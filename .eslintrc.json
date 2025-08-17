@@ -1,0 +1,141 @@
+{
+  // ESLint設定ファイル for FairSplit
+  // Next.js 14 + TypeScript + React環境用の厳格な品質管理設定
+  
+  // 実行環境の指定
+  "env": {
+    "browser": true,
+    "es2022": true,
+    "node": true
+  },
+  
+  // パーサー設定（TypeScript対応）
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "project": "./tsconfig.json"
+  },
+  
+  // 基本設定の継承
+  "extends": [
+    // ESLint推奨ルール
+    "eslint:recommended",
+    
+    // TypeScript推奨ルール
+    "@typescript-eslint/recommended",
+    "@typescript-eslint/recommended-requiring-type-checking",
+    
+    // Next.js専用ルール
+    "next/core-web-vitals",
+    
+    // React Hooks専用ルール
+    "plugin:react-hooks/recommended",
+    
+    // Prettier連携（競合ルールを無効化）
+    "prettier"
+  ],
+  
+  // 使用プラグイン
+  "plugins": [
+    "@typescript-eslint",
+    "react",
+    "react-hooks"
+  ],
+  
+  // カスタムルール設定
+  "rules": {
+    // TypeScript関連の厳格化
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/prefer-const": "error",
+    "@typescript-eslint/no-non-null-assertion": "warn",
+    
+    // React関連のベストプラクティス
+    "react/jsx-key": "error",
+    "react/jsx-no-duplicate-props": "error",
+    "react/jsx-no-undef": "error",
+    "react/no-unescaped-entities": "error",
+    
+    // React Hooks関連
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    
+    // セキュリティ関連
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-new-func": "error",
+    "no-script-url": "error",
+    
+    // パフォーマンス関連
+    "no-console": "warn",
+    "no-debugger": "error",
+    "no-alert": "warn",
+    
+    // コード品質
+    "no-duplicate-imports": "error",
+    "no-unreachable": "error",
+    "no-unused-expressions": "error",
+    "prefer-const": "error",
+    "no-var": "error",
+    
+    // Next.js特有の最適化
+    "@next/next/no-img-element": "error",
+    "@next/next/no-html-link-for-pages": "error",
+    
+    // アクセシビリティ
+    "jsx-a11y/alt-text": "error",
+    "jsx-a11y/aria-role": "error",
+    "jsx-a11y/click-events-have-key-events": "warn",
+    "jsx-a11y/no-static-element-interactions": "warn"
+  },
+  
+  // 特定ファイルの設定上書き
+  "overrides": [
+    {
+      // 設定ファイルでは一部ルールを緩和
+      "files": [
+        "*.config.js",
+        "*.config.ts",
+        "tailwind.config.js",
+        "next.config.js"
+      ],
+      "rules": {
+        "@typescript-eslint/no-var-requires": "off",
+        "no-undef": "off"
+      }
+    },
+    {
+      // テストファイルでは一部ルールを緩和
+      "files": [
+        "**/__tests__/**/*",
+        "**/*.test.*",
+        "**/*.spec.*"
+      ],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "no-console": "off"
+      }
+    }
+  ],
+  
+  // 無視するファイル・ディレクトリ
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "out/",
+    "dist/",
+    "build/",
+    "*.min.js",
+    "public/"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "// Prettier設定ファイル for FairSplit": "",
+  "// TypeScript + React + Tailwind CSS環境用フォーマット設定": "",
+  
+  "// 基本フォーマット設定": "",
+  "semi": true,
+  "singleQuote": true,
+  "quoteProps": "as-needed",
+  "trailingComma": "es5",
+  "tabWidth": 2,
+  "useTabs": false,
+  
+  "// 行幅設定（読みやすさ重視）": "",
+  "printWidth": 80,
+  "proseWrap": "preserve",
+  
+  "// JSX設定": "",
+  "jsxSingleQuote": true,
+  "jsxBracketSameLine": false,
+  
+  "// その他の設定": "",
+  "arrowParens": "avoid",
+  "bracketSpacing": true,
+  "endOfLine": "lf",
+  "htmlWhitespaceSensitivity": "css",
+  "insertPragma": false,
+  "requirePragma": false,
+  "embeddedLanguageFormatting": "auto",
+  
+  "// Tailwind CSS class sorting（プラグイン使用時）": "",
+  "tailwindConfig": "./tailwind.config.js",
+  
+  "// 対象ファイル拡張子": "",
+  "overrides": [
+    {
+      "files": "*.json",
+      "options": {
+        "parser": "json",
+        "trailingComma": "none"
+      }
+    },
+    {
+      "files": "*.md",
+      "options": {
+        "parser": "markdown",
+        "proseWrap": "always",
+        "printWidth": 100
+      }
+    },
+    {
+      "files": "*.{css,scss}",
+      "options": {
+        "parser": "css",
+        "singleQuote": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+# Prettier無視ファイル for FairSplit
+
+# 依存関係
+node_modules/
+
+# ビルド出力
+.next/
+out/
+dist/
+build/
+
+# ログファイル
+*.log
+
+# 環境設定ファイル
+.env*
+
+# Git関連
+.git/
+
+# IDE設定
+.vscode/
+.idea/
+
+# 一時ファイル
+*.tmp
+*.temp
+
+# パッケージマネージャー
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 自動生成ファイル
+next-env.d.ts
+
+# Vercel
+.vercel/
+
+# その他
+.DS_Store
+Thumbs.db
