@@ -27,6 +27,7 @@ export default function AddParticipantForm({ onAdd, onCancel, coefficients, exis
   ] as const;
   const [name, setName] = useState('');
   const [role, setRole] = useState<'junior' | 'middle' | 'senior' | 'manager'>('junior');
+  const [isOrganizer, setIsOrganizer] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; duplicate?: string }>({});
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -41,11 +42,12 @@ export default function AddParticipantForm({ onAdd, onCancel, coefficients, exis
     }
     
     // 参加者追加
-    onAdd({ name: name.trim(), role });
+    onAdd({ name: name.trim(), role, ...(isOrganizer && { isOrganizer }) });
     
     // フォームリセット
     setName('');
     setRole('junior');
+    setIsOrganizer(false);
     setErrors({});
   };
 
@@ -111,6 +113,24 @@ export default function AddParticipantForm({ onAdd, onCancel, coefficients, exis
               </div>
             </label>
           ))}
+        </div>
+      </div>
+
+      {/* 幹事設定 */}
+      <div>
+        <label className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            checked={isOrganizer}
+            onChange={(e) => setIsOrganizer(e.target.checked)}
+            className="rounded border-neutral-300 dark:border-neutral-600 text-primary-600 focus:ring-primary-500 dark:bg-neutral-700"
+          />
+          <span className="text-sm text-neutral-700 dark:text-neutral-300">
+            この参加者を幹事に設定する
+          </span>
+        </label>
+        <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+          幹事は端数（10円・1円の桁）を負担します
         </div>
       </div>
 

@@ -8,6 +8,7 @@ export interface Participant {
   id: string;
   name: string;
   role: Role;
+  isOrganizer?: boolean; // 幹事フラグ
 }
 
 // 役職係数インターフェース
@@ -45,6 +46,7 @@ export interface CalculationResult {
   role: Role;
   coefficient: number;
   amount: number;
+  isOrganizer?: boolean; // 幹事フラグ
 }
 
 // 精算データインターフェース（将来の拡張用）

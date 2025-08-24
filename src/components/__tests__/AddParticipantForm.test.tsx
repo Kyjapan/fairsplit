@@ -58,9 +58,7 @@ describe('AddParticipantForm', () => {
     await user.type(nameInput, '田中太郎');
     await user.click(middleRadio);
     
-    await waitFor(async () => {
-      await user.click(addButton);
-    });
+    await user.click(addButton);
 
     await waitFor(() => {
       expect(mockOnAdd).toHaveBeenCalledWith({
@@ -241,14 +239,61 @@ describe('AddParticipantForm', () => {
     await user.type(nameInput, '田中太郎');
     await user.click(middleRadio);
     
-    await waitFor(async () => {
-      await user.click(addButton);
-    });
+    await user.click(addButton);
 
     // フォームがリセットされることを確認
     await waitFor(() => {
       expect(nameInput).toHaveValue('');
       expect(screen.getByRole('radio', { name: /ジュニア/ })).toBeChecked();
+    });
+  });
+
+  it('TC024: 幹事設定チェックボックスが表示される', () => {
+    render(
+      <AddParticipantForm
+        onAdd={mockOnAdd}
+        onCancel={mockOnCancel}
+        coefficients={mockCoefficients}
+        existingNames={[]}
+      />
+    );
+
+    expect(screen.getByText('この参加者を幹事に設定する')).toBeInTheDocument();
+    expect(screen.getByText('幹事は端数（10円・1円の桁）を負担します')).toBeInTheDocument();
+    
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).not.toBeChecked();
+  });
+
+  it('TC025: 幹事設定で参加者を追加できる', async () => {
+    const user = userEvent.setup();
+    render(
+      <AddParticipantForm
+        onAdd={mockOnAdd}
+        onCancel={mockOnCancel}
+        coefficients={mockCoefficients}
+        existingNames={[]}
+      />
+    );
+
+    const nameInput = screen.getByLabelText(/名前/);
+    await user.type(nameInput, '幹事太郎');
+
+    const managerRadio = screen.getByRole('radio', { name: /マネージャー/ });
+    await user.click(managerRadio);
+
+    const organizerCheckbox = screen.getByRole('checkbox');
+    await user.click(organizerCheckbox);
+
+    const submitButton = screen.getByRole('button', { name: '追加' });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(mockOnAdd).toHaveBeenCalledWith({
+        name: '幹事太郎',
+        role: 'manager',
+        isOrganizer: true
+      });
     });
   });
 });

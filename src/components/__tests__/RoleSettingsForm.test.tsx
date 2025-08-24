@@ -297,9 +297,7 @@ describe('RoleSettingsForm', () => {
     await user.clear(middleInput);
     await user.type(middleInput, '1.4');
 
-    await waitFor(async () => {
-      await user.click(saveButton);
-    });
+    await user.click(saveButton);
 
     await waitFor(() => {
       expect(mockOnUpdate).toHaveBeenCalledWith({
@@ -330,6 +328,14 @@ describe('RoleSettingsForm', () => {
 
     // 保存を実行
     await user.click(saveButton);
-    expect(mockOnUpdate).toHaveBeenCalled();
+    
+    await waitFor(() => {
+      expect(mockOnUpdate).toHaveBeenCalledWith({
+        junior: 1.2,
+        middle: 1.3,
+        senior: 1.5,
+        manager: 2.0,
+      });
+    });
   });
 });

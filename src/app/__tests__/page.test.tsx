@@ -23,9 +23,6 @@ describe('HomePage', () => {
     expect(screen.getByLabelText(/イベント名/)).toBeInTheDocument();
     expect(screen.getByLabelText(/合計金額/)).toBeInTheDocument();
     expect(screen.getByText('参加者を追加してください')).toBeInTheDocument();
-    
-    const calculateButton = screen.getByRole('button', { name: '精算額を計算する' });
-    expect(calculateButton).toBeDisabled();
   });
 
   it('TC002: イベント名が正常に入力できる', async () => {
@@ -184,19 +181,13 @@ describe('HomePage', () => {
     });
   });
 
-  it('TC015: 計算ボタンが有効化される', async () => {
+  it('TC015: 合計金額と参加者を入力すると結果が表示される', async () => {
     const user = userEvent.setup();
     render(<HomePage />);
 
-    const calculateButton = screen.getByRole('button', { name: '精算額を計算する' });
-    expect(calculateButton).toBeDisabled();
-
     // 合計金額を入力
     const amountInput = screen.getByLabelText(/合計金額/);
-    await user.type(amountInput, '20000');
-
-    // まだ無効のまま（参加者がいない）
-    expect(calculateButton).toBeDisabled();
+    await user.type(amountInput, '2000');
 
     // 参加者を追加
     const addButton = screen.getByRole('button', { name: '+ 参加者を追加' });
@@ -208,19 +199,19 @@ describe('HomePage', () => {
     const submitButton = screen.getByRole('button', { name: '追加' });
     await user.click(submitButton);
 
-    // 計算ボタンが有効になる
+    // 計算結果が自動表示される
     await waitFor(() => {
-      expect(calculateButton).toBeEnabled();
+      expect(screen.getByText('精算結果')).toBeInTheDocument();
     });
   });
 
-  it('TC016: 計算処理が実行される', async () => {
+  it('TC016: リアルタイム計算が実行される', async () => {
     const user = userEvent.setup();
     render(<HomePage />);
 
     // 合計金額を入力
     const amountInput = screen.getByLabelText(/合計金額/);
-    await user.type(amountInput, '20000');
+    await user.type(amountInput, '2000');
 
     // 参加者を追加
     const addButton = screen.getByRole('button', { name: '+ 参加者を追加' });
@@ -232,17 +223,11 @@ describe('HomePage', () => {
     const submitButton = screen.getByRole('button', { name: '追加' });
     await user.click(submitButton);
 
-    // 計算ボタンをクリック
+    // 計算結果が自動表示される
     await waitFor(() => {
-      const calculateButton = screen.getByRole('button', { name: '精算額を計算する' });
-      expect(calculateButton).toBeEnabled();
+      expect(screen.getByText('精算結果')).toBeInTheDocument();
+      expect(screen.getByText('田中太郎')).toBeInTheDocument();
     });
-    
-    const calculateButton = screen.getByRole('button', { name: '精算額を計算する' });
-    await user.click(calculateButton);
-
-    // コンソールログを確認
-    expect(mockConsoleLog).toHaveBeenCalledWith('計算実行 - バリデーション通過');
   });
 
   it('役職ラベルが正しく表示される', async () => {
