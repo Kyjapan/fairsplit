@@ -522,7 +522,7 @@ export default function HomePage() {
         
         {/* モバイル表示 */}
         <div className="md:hidden mb-4 space-y-3">
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary-600 text-center">
             新しい精算を作成
           </h1>
           <Button
@@ -539,7 +539,7 @@ export default function HomePage() {
           </Button>
         </div>
         
-        <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-300 px-4 md:px-0">
+        <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-300 px-4 md:px-0 text-center">
           役職に応じた公平な割り勘を自動計算します
         </p>
       </div>
