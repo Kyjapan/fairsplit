@@ -210,7 +210,7 @@ export function calculateMultiSessionBillSplit(
   });
 
   const results: MultiSessionCalculationResult[] = participants.map(participant => {
-    const sessionResults = activeSessions.reduce<Array<{session: number; amount: number; coefficient: number; isOrganizer: boolean}>>((acc, session) => {
+    const sessionResults = activeSessions.reduce<Array<{session: PartySession; amount: number; coefficient: number; isOrganizer: boolean}>>((acc, session) => {
       // この参加者がこの次会に参加しているかチェック
       const isParticipating = (participant.participatingSessions || []).includes(session.session);
       

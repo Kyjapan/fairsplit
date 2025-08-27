@@ -107,19 +107,6 @@ export default function HomePage() {
   }, []);
 
 
-  // シンプルモードでの計算更新
-  useEffect(() => {
-    if (appMode === 'simple' && totalAmount && participants.length > 0) {
-      debouncedUpdateCalculation(totalAmount, participants, roleCoefficients);
-    }
-  }, [appMode, totalAmount, participants, roleCoefficients, debouncedUpdateCalculation]);
-
-  // 複数次会モードでの計算更新
-  useEffect(() => {
-    if (appMode === 'multi-session' && participants.length > 0) {
-      debouncedUpdateCalculation('', participants, roleCoefficients);
-    }
-  }, [sessions, appMode, participants, roleCoefficients, debouncedUpdateCalculation]);
 
   const addParticipant = (participantData: Omit<Participant, 'id'>) => {
     let updatedParticipants = [...participants];
@@ -385,6 +372,20 @@ export default function HomePage() {
       updateCalculation(amount, participantList, coefficients);
     }, 300); // 300ms遅延
   }, [updateCalculation]);
+
+  // シンプルモードでの計算更新（デバウンス付き）
+  useEffect(() => {
+    if (appMode === 'simple' && totalAmount && participants.length > 0) {
+      debouncedUpdateCalculation(totalAmount, participants, roleCoefficients);
+    }
+  }, [appMode, totalAmount, participants, roleCoefficients, debouncedUpdateCalculation]);
+
+  // 複数次会モードでの計算更新（デバウンス付き）
+  useEffect(() => {
+    if (appMode === 'multi-session' && participants.length > 0) {
+      debouncedUpdateCalculation('', participants, roleCoefficients);
+    }
+  }, [sessions, appMode, participants, roleCoefficients, debouncedUpdateCalculation]);
 
   // CSV出力機能
   const handleExportCSV = () => {
