@@ -12,7 +12,7 @@ import { calculateBillSplit, validateCalculation, getRemainderWarning, calculate
 import { generateCSV, downloadCSV, generateCSVFilename, generateMultiSessionCSV, generateMultiSessionCSVFilename } from '@/utils/export';
 import { generateShareURL, copyToClipboard, decompressDataFromURL, generateMultiSessionShareURL } from '@/utils/sharing';
 import { Participant, CalculationResult, AppMode, SessionInfo, PartySession, MultiSessionCalculationResult } from '@/types';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useCallback } from 'react';
 
 export default function HomePage() {
   // アプリケーションモード
@@ -43,6 +43,7 @@ export default function HomePage() {
   
   // タイマー管理用のref
   const shareTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // URL共有データの読み込み
   useEffect(() => {
@@ -93,19 +94,32 @@ export default function HomePage() {
     };
   }, []);
 
+  // コンポーネントアンマウント時のクリーンアップ
+  useEffect(() => {
+    return () => {
+      if (shareTimeoutRef.current) {
+        clearTimeout(shareTimeoutRef.current);
+      }
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
+
+
   // シンプルモードでの計算更新
   useEffect(() => {
     if (appMode === 'simple' && totalAmount && participants.length > 0) {
-      updateCalculation(totalAmount, participants, roleCoefficients);
+      debouncedUpdateCalculation(totalAmount, participants, roleCoefficients);
     }
-  }, [appMode, totalAmount, participants, roleCoefficients]);
+  }, [appMode, totalAmount, participants, roleCoefficients, debouncedUpdateCalculation]);
 
   // 複数次会モードでの計算更新
   useEffect(() => {
     if (appMode === 'multi-session' && participants.length > 0) {
-      updateCalculation('', participants, roleCoefficients);
+      debouncedUpdateCalculation('', participants, roleCoefficients);
     }
-  }, [sessions, appMode, participants, roleCoefficients]);
+  }, [sessions, appMode, participants, roleCoefficients, debouncedUpdateCalculation]);
 
   const addParticipant = (participantData: Omit<Participant, 'id'>) => {
     let updatedParticipants = [...participants];
@@ -175,8 +189,8 @@ export default function HomePage() {
     updateCalculation(totalAmount, newParticipants, roleCoefficients);
   };
 
-  // モード切り替え機能
-  const handleModeChange = (newMode: AppMode, isFromUrlLoad = false) => {
+  // モード切り替え機能（メモ化）
+  const handleModeChange = useCallback((newMode: AppMode, isFromUrlLoad = false) => {
     setAppMode(newMode);
     
     // URL読み込みでない場合のみ計算結果をクリア
@@ -188,14 +202,13 @@ export default function HomePage() {
     // 複数次会モードに切り替える場合、参加者の次会参加情報を初期化（空の状態）
     // ただしURL読み込みの場合は初期化しない
     if (newMode === 'multi-session' && !isFromUrlLoad) {
-      const updatedParticipants = participants.map(p => ({
+      setParticipants(prev => prev.map(p => ({
         ...p,
         participatingSessions: p.participatingSessions || [], // デフォルトは空（どの次会にも参加していない状態）
         organizingSessions: p.organizingSessions || []
-      }));
-      setParticipants(updatedParticipants);
+      })));
     }
-  };
+  }, []); // 依存なし（stateのsetterは安定）
 
   // 次会を追加
   const addSession = () => {
@@ -275,7 +288,16 @@ export default function HomePage() {
     }
   };
 
-  // 複数次会モードで精算に必要な設定が不足している次会をチェック（メモ化）
+  // 参加者の次会参加情報を安定化（メモ化最適化）
+  const participantSessionsData = useMemo(() => 
+    participants.map(p => ({
+      id: p.id,
+      participatingSessions: p.participatingSessions || [],
+      organizingSessions: p.organizingSessions || []
+    })), [participants]
+  );
+
+  // 複数次会モードで精算に必要な設定が不足している次会をチェック（最適化済み）
   const missingRequirements = useMemo(() => {
     if (appMode !== 'multi-session') return null;
     
@@ -284,8 +306,8 @@ export default function HomePage() {
     
     for (const session of activeSessions) {
       // この次会に参加している人がいるかチェック
-      const sessionParticipants = participants.filter(p => 
-        (p.participatingSessions || []).includes(session.session)
+      const sessionParticipants = participantSessionsData.filter(p => 
+        p.participatingSessions.includes(session.session)
       );
       
       if (sessionParticipants.length === 0) {
@@ -295,7 +317,7 @@ export default function HomePage() {
       
       // この次会に幹事がいるかチェック
       const hasOrganizer = sessionParticipants.some(p => 
-        (p.organizingSessions || []).includes(session.session)
+        p.organizingSessions.includes(session.session)
       );
       
       if (!hasOrganizer) {
@@ -304,7 +326,7 @@ export default function HomePage() {
     }
     
     return requirements.length > 0 ? requirements : null;
-  }, [appMode, sessions, participants]); // 依存配列：計算に影響する全ての値
+  }, [appMode, sessions, participantSessionsData]); // より安定した依存関係
 
   const getRoleLabel = (role: Participant['role']) => {
     const roleMap = {
@@ -323,8 +345,8 @@ export default function HomePage() {
     // 計算はuseEffectで自動実行されるため削除
   };
 
-  // リアルタイム計算の統合関数
-  const updateCalculation = (amount: string, participantList: Participant[], coefficients: RoleCoefficient) => {
+  // リアルタイム計算の統合関数（メモ化）
+  const updateCalculation = useCallback((amount: string, participantList: Participant[], coefficients: RoleCoefficient) => {
     if (appMode === 'simple') {
       // シンプルモードの計算
       if (amount && participantList.length > 0) {
@@ -351,7 +373,18 @@ export default function HomePage() {
         setMultiSessionCalculationResults([]);
       }
     }
-  };
+  }, [appMode, sessions]);
+
+  // デバウンス付き計算更新
+  const debouncedUpdateCalculation = useCallback((amount: string, participantList: Participant[], coefficients: RoleCoefficient) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    
+    debounceTimeoutRef.current = setTimeout(() => {
+      updateCalculation(amount, participantList, coefficients);
+    }, 300); // 300ms遅延
+  }, [updateCalculation]);
 
   // CSV出力機能
   const handleExportCSV = () => {

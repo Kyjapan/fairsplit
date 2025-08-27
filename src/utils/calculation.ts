@@ -12,23 +12,21 @@ export function calculateBillSplit(
     return [];
   }
 
-  // 各参加者の係数を取得
-  const participantsWithCoefficients = participants.map(participant => ({
-    ...participant,
-    coefficient: roleCoefficients[participant.role]
-  }));
-
-  // 係数の合計を計算
-  const totalCoefficient = participantsWithCoefficients.reduce(
-    (sum, p) => sum + p.coefficient,
+  // 係数合計を事前計算（単一パス）
+  const totalCoefficient = participants.reduce(
+    (sum, p) => sum + roleCoefficients[p.role],
     0
   );
 
-  // 各参加者の基本金額を計算
-  const participantsWithBaseAmounts = participantsWithCoefficients.map(participant => ({
-    ...participant,
-    baseAmount: (totalAmount * participant.coefficient) / totalCoefficient
-  }));
+  // 係数と基本金額を一度に計算（配列操作統合）
+  const participantsWithBaseAmounts = participants.map(participant => {
+    const coefficient = roleCoefficients[participant.role];
+    return {
+      ...participant,
+      coefficient,
+      baseAmount: (totalAmount * coefficient) / totalCoefficient
+    };
+  });
 
   // 端数調整（幹事がいる場合は幹事が端数を負担、いない場合は100円単位で調整）
   const adjustedResults = adjustAmountWithRemainder(participantsWithBaseAmounts, totalAmount);
@@ -199,56 +197,41 @@ export function calculateMultiSessionBillSplit(
     return [];
   }
 
+  // 次会ごとの係数合計を事前計算（重複計算回避）
+  const sessionCoefficientCache = new Map<number, number>();
+  activeSessions.forEach(session => {
+    const sessionParticipants = participants.filter(p => 
+      (p.participatingSessions || []).includes(session.session)
+    );
+    const totalCoefficient = sessionParticipants.reduce(
+      (sum, p) => sum + roleCoefficients[p.role], 0
+    );
+    sessionCoefficientCache.set(session.session, totalCoefficient);
+  });
+
   const results: MultiSessionCalculationResult[] = participants.map(participant => {
-    const sessionResults = activeSessions.map(session => {
+    const sessionResults = activeSessions.reduce<Array<{session: number; amount: number; coefficient: number; isOrganizer: boolean}>>((acc, session) => {
       // この参加者がこの次会に参加しているかチェック
       const isParticipating = (participant.participatingSessions || []).includes(session.session);
       
-      if (!isParticipating) {
-        return {
-          session: session.session,
-          amount: 0,
-          coefficient: 0,
-          isOrganizer: false
-        };
-      }
+      if (!isParticipating) return acc;
 
-      // この次会の参加者のみを抽出
-      const sessionParticipants = participants.filter(p => 
-        (p.participatingSessions || []).includes(session.session)
-      );
+      const totalCoefficient = sessionCoefficientCache.get(session.session) || 1;
+      if (totalCoefficient === 0) return acc;
 
-      if (sessionParticipants.length === 0) {
-        return {
-          session: session.session,
-          amount: 0,
-          coefficient: 0,
-          isOrganizer: false
-        };
-      }
-
-      // この次会での参加者の係数を取得
       const coefficient = roleCoefficients[participant.role];
-      
-      // この次会の係数合計を計算
-      const totalCoefficient = sessionParticipants.reduce(
-        (sum, p) => sum + roleCoefficients[p.role],
-        0
-      );
-
-      // この参加者がこの次会で幹事を務めるかチェック
       const isOrganizer = (participant.organizingSessions || []).includes(session.session);
-
-      // 基本金額を計算
       const baseAmount = (session.amount * coefficient) / totalCoefficient;
 
-      return {
+      acc.push({
         session: session.session,
         amount: baseAmount,
         coefficient: coefficient,
         isOrganizer: isOrganizer
-      };
-    }).filter(result => result.amount > 0); // 参加しない次会は除外
+      });
+
+      return acc;
+    }, []);
 
     return {
       participantId: participant.id,
