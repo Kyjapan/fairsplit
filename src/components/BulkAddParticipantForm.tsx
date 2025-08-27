@@ -21,6 +21,7 @@ export default function BulkAddParticipantForm({ onAdd, onCancel, existingNames 
     { name: '', role: 'junior', isOrganizer: false }
   ]);
   const [errors, setErrors] = useState<string[]>([]);
+  const [showErrors, setShowErrors] = useState(true);
 
   const roleLabels = {
     junior: 'ジュニア',
@@ -102,26 +103,47 @@ export default function BulkAddParticipantForm({ onAdd, onCancel, existingNames 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-4">
-        <div className="text-sm text-neutral-600 dark:text-neutral-400">
-          複数の参加者を一度に追加できます。各行に名前と役職を入力し、幹事がいる場合はチェックを入れてください。
-        </div>
-        <div className="text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-700 p-3 rounded-md">
-          💡 幹事は端数（10円・1円の桁）を負担します。通常は1名を幹事に設定してください。
-        </div>
+    <div className="space-y-4">
+      {/* 固定の説明文 */}
+      <div className="text-sm text-neutral-600 dark:text-neutral-400">
+        複数の参加者を一度に追加できます。各行に名前と役職を入力し、幹事がいる場合はチェックを入れてください。
+      </div>
+      <div className="text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-700 p-3 rounded-md">
+        💡 幹事は端数（10円・1円の桁）を負担します。通常は1名を幹事に設定してください。
+      </div>
 
+      {/* スクロール可能なエラー表示と参加者入力部分 */}
+      <div className="max-h-80 overflow-y-auto space-y-4 pr-2">
         {/* エラー表示 */}
         {errors.length > 0 && (
-          <div className="bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-md p-4">
-            <div className="text-sm text-error-700 dark:text-error-400">
-              <div className="font-medium mb-2">入力エラー:</div>
-              <ul className="list-disc list-inside space-y-1">
-                {errors.map((error, index) => (
-                  <li key={index}>{error}</li>
-                ))}
-              </ul>
+          <div className="bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-md">
+            <div 
+              className="flex items-center justify-between p-4 cursor-pointer"
+              onClick={() => setShowErrors(!showErrors)}
+            >
+              <div className="text-sm font-medium text-error-700 dark:text-error-400">
+                入力エラー ({errors.length}件)
+              </div>
+              <svg 
+                className={`w-4 h-4 text-error-600 dark:text-error-400 transition-transform ${showErrors ? 'rotate-180' : ''}`}
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m19 9-7 7-7-7" />
+              </svg>
             </div>
+            {showErrors && (
+              <div className="px-4 pb-4">
+                <div className="max-h-32 overflow-y-auto">
+                  <ul className="list-disc list-inside space-y-1 text-sm text-error-700 dark:text-error-400">
+                    {errors.map((error, index) => (
+                      <li key={index}>{error}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -134,7 +156,8 @@ export default function BulkAddParticipantForm({ onAdd, onCancel, existingNames 
             <div className="col-span-2">操作</div>
           </div>
 
-          {participants.map((participant, index) => (
+          <div className="space-y-3">
+            {participants.map((participant, index) => (
             <div key={index} className="grid grid-cols-12 gap-2 items-center">
               {/* 名前入力 */}
               <div className="col-span-4">
@@ -197,47 +220,50 @@ export default function BulkAddParticipantForm({ onAdd, onCancel, existingNames 
                 </Button>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* 行追加ボタン */}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={addParticipantRow}
-          className="w-full"
-          disabled={participants.length >= 10}
-        >
-          + 参加者を追加
-        </Button>
-
-        {participants.length >= 10 && (
-          <div className="text-xs text-neutral-500 dark:text-neutral-400 text-center">
-            一度に追加できるのは10名までです
+            ))}
           </div>
-        )}
+        </div>
       </div>
 
-      {/* ボタン */}
-      <div className="flex space-x-3 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          className="flex-1"
-        >
-          キャンセル
-        </Button>
-        <Button
-          type="submit"
-          variant="primary"
-          className="flex-1"
-          disabled={participants.every(p => !p.name.trim())}
-        >
-          {participants.filter(p => p.name.trim()).length}名を追加
-        </Button>
-      </div>
-    </form>
+      {/* 固定の参加者追加ボタン */}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={addParticipantRow}
+        className="w-full"
+        disabled={participants.length >= 50}
+      >
+        + 参加者を追加
+      </Button>
+
+      {participants.length >= 50 && (
+        <div className="text-xs text-neutral-500 dark:text-neutral-400 text-center">
+          一度に追加できるのは50名までです
+        </div>
+      )}
+
+      {/* 固定フッター: 実行ボタン */}
+      <form onSubmit={handleSubmit} className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
+        <div className="flex space-x-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            className="flex-1"
+          >
+            キャンセル
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            className="flex-1"
+            disabled={participants.every(p => !p.name.trim())}
+          >
+            {participants.filter(p => p.name.trim()).length}名を追加
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }
